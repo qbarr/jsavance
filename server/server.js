@@ -26,6 +26,7 @@ io.on('connection', (socket) => {
     socket.on('startGame',()=>{
         console.log('startgameserver');
         io.emit('startGame')
+        socket.broadcast.emit('inverse')
     })
     socket.on('disconnect', () => {
         console.log('A user has disconnected.');

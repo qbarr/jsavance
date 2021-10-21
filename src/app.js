@@ -2,7 +2,8 @@ import { forEachLimit } from 'async'
 import music from './parts/music.js'
 
 const socket = io("ws://localhost:3000");
-const startButton = document.getElementsByClassName('start-button')[0]
+const startButton = document.getElementsByClassName('start-btn')[0]
+const wrapperButton = document.getElementsByClassName('btn-wrapper')[0]
 
 
 startButton.addEventListener('click', () => {
@@ -11,7 +12,7 @@ startButton.addEventListener('click', () => {
 
 socket.on('startGame', () => {
     console.log('startgameclient');
-    startButton.style.display='none'
+    wrapperButton.style.display='none'
     socket.on('translation',(position)=>{
         if(position.y>0) {
             Translation('right',false)
@@ -21,12 +22,12 @@ socket.on('startGame', () => {
         }
     }) 
 const background = new Image()
-background.src="https://dcn.eestienne.info/QuentinBa/workshop/images/miniJeuCanvas/interfaceBackground3.png"
+background.src="https://dcn.eestienne.info/QuentinBa/jsavance/assets/galaxy.png"
 const [soundCtx,biquadFilter,osc] = music()
 
 const canvas = document.getElementById('canvas')
-canvas.width=window.innerWidth*0.8
-canvas.height=window.innerHeight*0.8
+canvas.width=window.innerWidth
+canvas.height=window.innerHeight
 const ctx = canvas.getContext('2d')
 
 const imgAvion = new Image()
@@ -169,6 +170,12 @@ function rectIntersect(a,b) {
 function gameOver() {
     ctx.clearRect(0,0,canvas.width,canvas.height);
     clearInterval(varInterval)
+    background.src='https://dcn.eestienne.info/QuentinBa/jsavance/assets/gameover.webp'
+    
+    setTimeout(() => {
+        ctx.drawImage(background,0,0,canvas.width,canvas.height)
+
+    }, 100);
     osc.stop()
 } 
 
@@ -231,6 +238,7 @@ function distanceEnnemies() {
 
 function soundWithDistance() {
     const distRel = 100 - ((distance.x +distance.y)/10)
+    console.log(distRel);
     if(distRel>70) {
         biquadFilter.gain.setValueAtTime(70,soundCtx.currentTime)
     } else if(distRel>60) {
