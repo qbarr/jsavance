@@ -5,8 +5,8 @@ export default function() {
     const biquadFilter = soundCtx.createBiquadFilter()
 
     biquadFilter.type = 'lowshelf'
-    biquadFilter.frequency.setValueAtTime(10000, soundCtx.currentTime)
-    biquadFilter.gain.setValueAtTime(25, soundCtx.currentTime)
+    biquadFilter.frequency.setValueAtTime(480, soundCtx.currentTime)
+    biquadFilter.gain.setValueAtTime(0, soundCtx.currentTime)
     const osc = soundCtx.createOscillator()
     osc.type = 'sine'
     osc.frequency.value = 430
@@ -15,18 +15,18 @@ export default function() {
     const amp = soundCtx.createGain()
     amp.gain.setValueAtTime(1, soundCtx.currentTime)
   
-    let lfo = soundCtx.createOscillator()
+  /*   let lfo = soundCtx.createOscillator()
     lfo.type = 'sine'
-    lfo.frequency.value = 4
+    lfo.frequency.value = 4 */
   
-    lfo.connect(amp.gain)
-    biquadFilter.connect(amp).connect(soundCtx.destination)
-    lfo.start()
+/*     lfo.connect(amp.gain)
+ */    biquadFilter.connect(soundCtx.destination)
+    // lfo.start()
     osc.start()
 
    
 
-    return [soundCtx,biquadFilter,osc,lfo]
+    return [soundCtx,biquadFilter,osc]
 
   }
   

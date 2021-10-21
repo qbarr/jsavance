@@ -2,7 +2,7 @@
   "name": "starter-kit",
   "version": "1.0.0",
   "description": "a minimalist starter kit",
-  "main": "src/app.js",
+  "private":true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "webpack-dev-server --open",
@@ -22,5 +22,7 @@
     "webpack-cli": "^3.3.8",
     "webpack-dev-server": "^3.8.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "socket.io": "^4.3.1"
+  }
 }

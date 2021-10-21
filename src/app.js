@@ -1,17 +1,36 @@
 import { forEachLimit } from 'async'
 import music from './parts/music.js'
 
+const socket = io("ws://localhost:3000");
+const startButton = document.getElementsByClassName('start-button')[0]
+
+
+startButton.addEventListener('click', () => {
+    socket.emit('startGame');
+});
+
+socket.on('startGame', () => {
+    console.log('startgameclient');
+    startButton.style.display='none'
+    socket.on('translation',(position)=>{
+        if(position.y>0) {
+            Translation('right',false)
+        } else {
+            Translation('left',false)
+    
+        }
+    }) 
 const background = new Image()
 background.src="https://dcn.eestienne.info/QuentinBa/workshop/images/miniJeuCanvas/interfaceBackground3.png"
-const [soundCtx,biquadFilter,osc,lfo] = music()
+const [soundCtx,biquadFilter,osc] = music()
 
 const canvas = document.getElementById('canvas')
 canvas.width=window.innerWidth*0.8
 canvas.height=window.innerHeight*0.8
 const ctx = canvas.getContext('2d')
 
-const imgAvion = document.getElementById('avion')
-console.log(imgAvion);
+const imgAvion = new Image()
+imgAvion.src ='https://dcn.eestienne.info/QuentinBa/jsavance/assets/avion.png'
 
 let ennemies = {
     ennemi1 : {
@@ -44,13 +63,16 @@ document.addEventListener('keydown',(e)=>onKeyDown(e))
 function onKeyDown(e) {
     if(win===false && lose===false) {
         if(e.keyCode===39) {
-            Translation('right')
+             Translation('right')
             gestionMusic(e,'right')
+           // socket.emit('translation')
+
         }
         if(e.keyCode===37) {
-            Translation('left')
+             Translation('left')
             gestionMusic(e,'left')
-    
+            //socket.emit('translation')
+
         }
     }
 
@@ -84,9 +106,9 @@ function gameLoop() {
             ctx.drawImage(background,0,0,canvas.width,canvas.height)
         } 
         avion.onload = function (){
-            ctx.drawImage(avion, canvas.width*0.5, canvas.height-100,this.naturalWidth/4,this.naturalHeight/4);
-            ctx.drawImage(avion, canvas.width*0.25, 100,this.naturalWidth/4,this.naturalHeight/4);
-            ctx.drawImage(avion, canvas.width*0.75, 100,this.naturalWidth/4,this.naturalHeight/4);
+            ctx.drawImage(avion.img, canvas.width*0.5, canvas.height-100,this.naturalWidth/4,this.naturalHeight/4);
+            ctx.drawImage(avion.img, canvas.width*0.25, 100,this.naturalWidth/4,this.naturalHeight/4);
+            ctx.drawImage(avion.img, canvas.width*0.75, 100,this.naturalWidth/4,this.naturalHeight/4);
         }
     
     }
@@ -98,37 +120,15 @@ function refreshCanvas(nbDirectionAvion,avancementEnnemies) {
     ctx.drawImage(background,0,0,canvas.width,canvas.height)
 
     for(const ennemy in ennemies) {
-          ctx.drawImage(avion.img,ennemies[ennemy].x-=avancementEnnemies,ennemies[ennemy].y,avion.img.naturalWidth/8,avion.img.naturalHeight/8)
+            ctx.drawImage(avion.img,ennemies[ennemy].x-=avancementEnnemies,ennemies[ennemy].y,avion.img.naturalWidth/8,avion.img.naturalHeight/8)
+        
     }
-    ctx.drawImage(avion.img,avion.x+=Math.abs(nbDirectionAvion),avion.y+=nbDirectionAvion,avion.img.naturalWidth/8,avion.img.naturalHeight/8)
+        ctx.drawImage(avion.img,avion.x+=Math.abs(nbDirectionAvion),avion.y+=nbDirectionAvion,avion.img.naturalWidth/8,avion.img.naturalHeight/8)
+
+    
 }
 
-function Translation(direction) {
-    let nbDirection=0
 
-    if(direction==='left') {
-        if(avion.y<canvas.height*0.05) {
-            nbDirection =0
-        } else {
-            nbDirection=-15
-        }
-    } else if(direction==='right') {
-        if(avion.y>canvas.height*0.83) {
-            nbDirection =0
-        } else {
-            nbDirection=15
-        }
-    }
-    refreshCanvas(nbDirection,0)
-    distanceEnnemies()
-
-    if(hasCollision()) {
-        gameOver()
-    }
-    if(isWin()) {
-        Win()
-    }
-}
 
 function isWin()  {
     if(avion.x>canvas.width*0.85) {
@@ -143,7 +143,7 @@ function Win() {
     clearInterval(varInterval)
     background.src='./assets/avion.jpg'
     ctx.drawImage(background,0,0,canvas.width,canvas.height)
-
+    osc.stop
 }
 
 
@@ -169,13 +169,13 @@ function rectIntersect(a,b) {
 function gameOver() {
     ctx.clearRect(0,0,canvas.width,canvas.height);
     clearInterval(varInterval)
+    osc.stop()
 } 
 
 
 
 let distortionCurveNb = 400
 function gestionMusic(e,action) {
-    console.log(e);
     const distortion = soundCtx.createWaveShaper()
 
 
@@ -204,7 +204,6 @@ function gestionMusic(e,action) {
          
          biquadFilter.type = 'lowshelf'
         biquadFilter.frequency.setValueAtTime(distortionCurveNb+15, soundCtx.currentTime)
-        biquadFilter.gain.setValueAtTime(25, soundCtx.currentTime) 
 
     } else if(action==='right') {
         // osc.frequency.value +=1
@@ -231,6 +230,50 @@ function distanceEnnemies() {
 }
 
 function soundWithDistance() {
-    biquadFilter.gain.setValueAtTime(-900+distance.x +distance.y,soundCtx.currentTime)
-    console.log((distance.x +distance.y));
+    const distRel = 100 - ((distance.x +distance.y)/10)
+    if(distRel>70) {
+        biquadFilter.gain.setValueAtTime(70,soundCtx.currentTime)
+    } else if(distRel>60) {
+        biquadFilter.gain.setValueAtTime(60,soundCtx.currentTime)
+    }else if(distRel>50) {
+        biquadFilter.gain.setValueAtTime(30,soundCtx.currentTime)
+    }else if(distRel>40) {
+        biquadFilter.gain.setValueAtTime(10,soundCtx.currentTime)
+    }else if(distRel>30) {
+        biquadFilter.gain.setValueAtTime(5,soundCtx.currentTime)
+    }
 }
+
+
+
+function Translation(direction,mine=true) {
+    let nbDirection=0
+
+    if(direction==='left') {
+        if(avion.y<canvas.height*0.05) {
+            nbDirection =0
+        } else {
+            nbDirection=-15
+            mine && socket.emit('translation',{x:15,y:-15})
+        }
+    } else if(direction==='right') {
+        if(avion.y>canvas.height*0.83) {
+            nbDirection =0
+        } else {
+            nbDirection=15
+            mine && socket.emit('translation',{x:15,y:15})
+        }
+    }
+    refreshCanvas(nbDirection,0)
+    console.log(nbDirection);
+    distanceEnnemies()
+
+    if(hasCollision()) {
+        gameOver()
+    }
+    if(isWin()) {
+        Win()
+    }
+}
+
+});

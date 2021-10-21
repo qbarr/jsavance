@@ -40,7 +40,7 @@ module.exports = {
         to: path.resolve(__dirname, 'dist', 'style'),
       },
       {
-        from: './src/assets/avion.png',
+        from: './src/assets/avion.jpg',
         to: path.resolve(__dirname, 'dist', 'dist'),
       },
       {
