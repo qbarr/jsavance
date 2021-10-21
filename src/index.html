@@ -5,14 +5,42 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://pixijs.download/release/pixi.min.js"></script>
 </head>
+<style>
+    body {
+        overflow:hidden;
+        margin:0;
+        position:relative;
+    }
+
+    #avion {
+        width: 20rem;
+        height: auto;
+    }
+   
+
+    .wrapper-canvas {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+    }
+
+</style>
 <body>
-    <video autoplay="true" id="webcam"></video>
-	</video>
-    <canvas id="canvas">
-        <img id="source" src="https://picsum.photos/200/300"
-        width="300" height="227">
-    </canvas>
+    <!-- <video autoplay="true" id="webcam"></video>
+	</video> -->
+    <div class='wrapper-canvas'>
+        <canvas id="canvas">
+            <img id="avion" width="100" height="200" src="./assets/avion.jpg" alt=""/>
+    
+        </canvas>
+    </div>
+
     <script src="bundle.js" charset="utf-8"></script>
-</body>
+<!--     <script src="app2.js" charset="utf-8"></script>
+ --></body>
 </html>
