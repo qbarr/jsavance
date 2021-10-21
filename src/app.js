@@ -6,6 +6,15 @@ const startButton = document.getElementsByClassName('start-btn')[0]
 const wrapperButton = document.getElementsByClassName('btn-wrapper')[0]
 
 
+function vh(v) {
+    var h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+    return (v * h) / 100;
+  }
+  
+  function vw(v) {
+    var w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+    return (v * w) / 100;
+  }
 startButton.addEventListener('click', () => {
     socket.emit('startGame');
 });
@@ -22,25 +31,28 @@ socket.on('startGame', () => {
         }
     }) 
 const background = new Image()
-background.src="https://dcn.eestienne.info/QuentinBa/jsavance/assets/galaxy.png"
-const [soundCtx,biquadFilter,osc] = music()
+background.src="https://dcn.eestienne.info/QuentinBa/jsavance/assets/background-2.png"
+const [soundCtx,osc,lfo] = music()
 
 const canvas = document.getElementById('canvas')
-canvas.width=window.innerWidth
-canvas.height=window.innerHeight
+canvas.width=vw(100)
+canvas.height=vh(100)
 const ctx = canvas.getContext('2d')
 
 const imgAvion = new Image()
-imgAvion.src ='https://dcn.eestienne.info/QuentinBa/jsavance/assets/avion.png'
+imgAvion.src ='https://dcn.eestienne.info/QuentinBa/jsavance/assets/vaisseau-1.png'
+
+const imgEnnemy = new Image()
+imgEnnemy.src ='https://dcn.eestienne.info/QuentinBa/jsavance/assets/vaisseau-ennemi.png'
 
 let ennemies = {
     ennemi1 : {
-        img:imgAvion,
+        img:imgEnnemy,
         x:canvas.width*0.72,
         y:canvas.height*0.2
     },
     ennemi2: {
-        img:imgAvion,
+        img:imgEnnemy,
         x:canvas.width*0.91,
         y:canvas.height*0.7
     }
@@ -108,8 +120,8 @@ function gameLoop() {
         } 
         avion.onload = function (){
             ctx.drawImage(avion.img, canvas.width*0.5, canvas.height-100,this.naturalWidth/4,this.naturalHeight/4);
-            ctx.drawImage(avion.img, canvas.width*0.25, 100,this.naturalWidth/4,this.naturalHeight/4);
-            ctx.drawImage(avion.img, canvas.width*0.75, 100,this.naturalWidth/4,this.naturalHeight/4);
+            ctx.drawImage(ennemies[ennemy1].img, canvas.width*0.25, 100,this.naturalWidth/4,this.naturalHeight/4);
+            ctx.drawImage(ennemies[ennemy2].img, canvas.width*0.75, 100,this.naturalWidth/4,this.naturalHeight/4);
         }
     
     }
@@ -121,10 +133,10 @@ function refreshCanvas(nbDirectionAvion,avancementEnnemies) {
     ctx.drawImage(background,0,0,canvas.width,canvas.height)
 
     for(const ennemy in ennemies) {
-            ctx.drawImage(avion.img,ennemies[ennemy].x-=avancementEnnemies,ennemies[ennemy].y,avion.img.naturalWidth/8,avion.img.naturalHeight/8)
+            ctx.drawImage(ennemies[ennemy].img,ennemies[ennemy].x-=avancementEnnemies,ennemies[ennemy].y,avion.img.naturalWidth/10,avion.img.naturalHeight/10)
         
     }
-        ctx.drawImage(avion.img,avion.x+=Math.abs(nbDirectionAvion),avion.y+=nbDirectionAvion,avion.img.naturalWidth/8,avion.img.naturalHeight/8)
+        ctx.drawImage(avion.img,avion.x+=Math.abs(nbDirectionAvion),avion.y+=nbDirectionAvion,avion.img.naturalWidth/10,avion.img.naturalHeight/10)
 
     
 }
@@ -140,11 +152,17 @@ function isWin()  {
 }
 
 function Win() {
-    ctx.clearRect(0,0,canvas.width,canvas.height);
     clearInterval(varInterval)
-    background.src='./assets/avion.jpg'
-    ctx.drawImage(background,0,0,canvas.width,canvas.height)
-    osc.stop
+    background.src='https://dcn.eestienne.info/QuentinBa/jsavance/assets/youwin.jpg'
+    setTimeout(() => {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.drawImage(background,0,0,canvas.width,canvas.height)
+
+    }, 300);
+    lfo.frequency.value = 2
+    setTimeout(() => {
+        osc.stop()
+    }, 3000);
 }
 
 
@@ -161,22 +179,25 @@ function hasCollision() {
 }
 
 function rectIntersect(a,b) {
-    return a.x + a.img.naturalWidth/8 > b.x &&
-          a.x < b.x + b.img.naturalWidth/8 && 
-          a.y + a.img.naturalHeight/8 > b.y &&
-          a.y < b.y + b.img.naturalHeight/8
+    return a.x + a.img.naturalWidth/10 > b.x &&
+          a.x < b.x + b.img.naturalWidth/10 && 
+          a.y + a.img.naturalHeight/10 > b.y &&
+          a.y < b.y + b.img.naturalHeight/10
 }
 
 function gameOver() {
-    ctx.clearRect(0,0,canvas.width,canvas.height);
     clearInterval(varInterval)
     background.src='https://dcn.eestienne.info/QuentinBa/jsavance/assets/gameover.webp'
     
     setTimeout(() => {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
         ctx.drawImage(background,0,0,canvas.width,canvas.height)
 
-    }, 100);
-    osc.stop()
+    }, 300);
+    lfo.frequency.value = 20
+    setTimeout(() => {
+        osc.stop()
+    }, 3000);
 } 
 
 
@@ -209,13 +230,13 @@ function gestionMusic(e,action) {
     /*    distortionCurveNb -= 15
         distortion.curve = makeDistortionCurve(distortionCurveNb-15); */
          
-         biquadFilter.type = 'lowshelf'
+     /*     biquadFilter.type = 'lowshelf'
         biquadFilter.frequency.setValueAtTime(distortionCurveNb+15, soundCtx.currentTime)
-
+ */
     } else if(action==='right') {
         // osc.frequency.value +=1
-         distortionCurveNb += 15
-         distortion.curve = makeDistortionCurve(distortionCurveNb+15); 
+     /*     distortionCurveNb += 15
+         distortion.curve = makeDistortionCurve(distortionCurveNb+15);  */
     } 
 
 }
@@ -240,15 +261,15 @@ function soundWithDistance() {
     const distRel = 100 - ((distance.x +distance.y)/10)
     console.log(distRel);
     if(distRel>70) {
-        biquadFilter.gain.setValueAtTime(70,soundCtx.currentTime)
+        lfo.frequency.value=10
     } else if(distRel>60) {
-        biquadFilter.gain.setValueAtTime(60,soundCtx.currentTime)
+        lfo.frequency.value=8
     }else if(distRel>50) {
-        biquadFilter.gain.setValueAtTime(30,soundCtx.currentTime)
+        lfo.frequency.value=5
     }else if(distRel>40) {
-        biquadFilter.gain.setValueAtTime(10,soundCtx.currentTime)
+        lfo.frequency.value=4
     }else if(distRel>30) {
-        biquadFilter.gain.setValueAtTime(5,soundCtx.currentTime)
+        lfo.frequency.value=3
     }
 }
 
