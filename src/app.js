@@ -103,7 +103,7 @@ socket.on('startGame', () => {
     let varInterval = setInterval(interval, 500)
 
     function interval() {
-        refreshCanvas(0, 15)
+        refreshCanvas(0, 35)
 
         if (hasCollision()) {
             gameOver()
